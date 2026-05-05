@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#071220"/>
+<title>FREMEC · Mantenimiento</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#071220;--bg2:#0a1a2e;--bg3:#0d1b2a;
+  --border:#1e3a5a;--border2:#1e2a3a;
+  --text:#e0eaf8;--text2:#b0c4d8;--text3:#4a6a8a;
+  --blue:#1a7fd4;--green:#00c896;--red:#ff4d4d;--gold:#ffd700;
+  --font:'DM Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;}
+button{font-family:var(--font);cursor:pointer;}
+input,textarea,select{font-family:var(--font);}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(0.4);}
+textarea{resize:vertical;}
+.screen{display:none;min-height:100vh;padding-bottom:80px;}
+.screen.active{display:block;}
+.sticky-header{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:1px solid var(--border);padding:16px;}
+.back-btn{background:none;border:none;color:var(--green);font-size:14px;padding:0 0 8px;display:block;}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
+.card-green{border-color:#00c89640;}
+.card-red{border-color:#ff4d4d30;}
+.badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-green{background:#00c89620;color:var(--green);}
+.badge-red{background:#ff4d4d20;color:var(--red);}
+.badge-yellow{background:#ffd70020;color:var(--gold);}
+.badge-gray{background:var(--border);color:var(--text3);}
+.progress-track{background:var(--border2);border-radius:6px;height:8px;}
+.progress-fill{height:8px;border-radius:6px;transition:width 0.4s;}
+.status-row{padding:12px 0;border-bottom:1px solid var(--border2);}
+.status-label{font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.4;}
+.status-btns{display:flex;gap:10px;}
+.status-btn{flex:1;padding:16px 0;border-radius:12px;border:2px solid var(--border);background:var(--bg);color:var(--text3);font-weight:800;font-size:15px;transition:all 0.15s;letter-spacing:0.5px;}
+.status-btn:active{transform:scale(0.96);}
+.status-btn.ok{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 4px 12px #00c89640;}
+.status-btn.nc{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 4px 12px #ff4d4d40;}
+.status-btn.na{background:#555;color:#fff;border-color:#555;}
+/* NC Alert styles */
+.nc-alert-card{background:#ff4d4d12;border:1px solid #ff4d4d40;border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.nc-alert-title{font-size:12px;font-weight:800;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.nc-alert-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #ff4d4d20;}
+.nc-alert-item:last-child{border-bottom:none;}
+.nc-alert-form{font-size:11px;font-weight:700;color:var(--red);flex-shrink:0;}
+.nc-alert-label{font-size:12px;color:var(--text2);flex:1;}
+/* History NC badge */
+.nc-hist-badge{display:inline-block;background:#ff4d4d20;color:var(--red);border:1px solid #ff4d4d40;border-radius:6px;font-size:10px;font-weight:700;padding:2px 7px;margin-left:6px;}
+/* Trend indicator */
+.trend-up{color:var(--green);font-weight:800;}
+.trend-dn{color:var(--red);font-weight:800;}
+.trend-eq{color:var(--text3);font-weight:700;}
+/* Search bar */
+.search-bar{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-size:14px;outline:none;margin-bottom:14px;}
+.search-bar:focus{border-color:var(--blue);}
+/* Semestral date */
+.sem-date-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border2);margin-top:8px;}
+.sem-date-label{font-size:12px;color:var(--text3);flex:1;}
+.sem-date-input{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;outline:none;}
+.sem-date-input:focus{border-color:#6c3fb5;}
+.sem-venc-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.sem-venc-ok{background:#00c89620;color:var(--green);border:1px solid #00c89640;}
+.sem-venc-warn{background:#ffd70020;color:var(--gold);border:1px solid #ffd70040;}
+.sem-venc-due{background:#ff4d4d20;color:var(--red);border:1px solid #ff4d4d40;}
+/* Backup card */
+.backup-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
+.backup-btn{flex:1;padding:12px 8px;border:none;border-radius:10px;font-weight:700;font-size:13px;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;}
+.data-row{padding:10px 0;border-bottom:1px solid var(--border2);}
+.data-label{font-size:13px;color:var(--text3);margin-bottom:6px;}
+.data-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:14px;font-family:var(--mono);outline:none;}
+.data-input:focus{border-color:var(--blue);}
+.section-label{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:1.5px;text-transform:uppercase;margin:16px 0 8px;}
+.form-items-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:4px 16px;margin-bottom:4px;}
+.stat-boxes{display:flex;gap:10px;margin-top:14px;}
+.stat-box{flex:1;border-radius:10px;padding:10px 14px;text-align:center;}
+.stat-box .num{font-size:22px;font-weight:800;}
+.stat-box .lbl{font-size:11px;margin-top:2px;}
+.stat-green{background:#00c89620;border:1px solid #00c89640;color:var(--green);}
+.stat-red{background:#ff4d4d20;border:1px solid #ff4d4d40;color:var(--red);}
+.stat-blue{background:#1a7fd420;border:1px solid #1a7fd440;color:var(--blue);}
+.save-btn{width:100%;padding:16px;background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:16px;margin:8px 0 24px;transition:background 0.2s;}
+.save-btn.saved{background:var(--green);}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;font-size:14px;display:none;z-index:9999;box-shadow:0 4px 20px #00c89660;white-space:nowrap;max-width:90vw;text-align:center;}
+.form-list-item{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;transition:border-color 0.2s;}
+.form-list-item.done{border-color:#00c89640;}
+.form-list-item .left-accent{width:4px;min-height:40px;background:var(--green);border-radius:4px;flex-shrink:0;}
+.form-list-item .item-title{font-weight:700;font-size:15px;}
+.form-list-item .item-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.form-list-item .item-tech{font-size:11px;color:var(--green);margin-top:3px;}
+.form-list-item .badge-wrap{margin-left:auto;flex-shrink:0;}
+.week-nav{display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.week-nav span{flex:1;font-size:11px;color:var(--text3);}
+.nav-btn{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 12px;color:var(--text2);font-size:15px;}
+.today-btn{background:#1a7fd420;border:1px solid #1a7fd440;border-radius:6px;padding:5px 10px;color:var(--blue);font-size:11px;font-weight:700;}
+.readonly-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);}
+.readonly-label{font-size:13px;color:var(--text2);flex:1;}
+.readonly-val{font-size:13px;font-weight:600;color:var(--text);font-family:var(--mono);}
+.chip-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;}
+.chip{font-size:9px;padding:2px 7px;border-radius:6px;}
+.chip-done{background:#00c89620;color:var(--green);border:1px solid #00c89640;}
+.chip-pend{background:#ff4d4d15;color:var(--red);border:1px solid #ff4d4d30;}
+.content-pad{padding:16px;}
+
+/* MONITOR */
+#monitor-canvas{background:#060f1a;font-family:'DM Sans',sans-serif;padding:20px;border-radius:16px;border:1px solid #1e3a5a;}
+.m-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #1e3a5a;}
+.m-logo{font-size:9px;letter-spacing:3px;color:#1a7fd4;font-weight:800;text-transform:uppercase;}
+.m-title{font-size:17px;font-weight:800;color:#e0eaf8;margin-top:2px;}
+.m-week{font-size:11px;color:#4a6a8a;margin-top:2px;}
+.m-pct{font-size:28px;font-weight:800;line-height:1;text-align:right;}
+.m-pct-lbl{font-size:10px;color:#4a6a8a;text-align:right;margin-top:2px;}
+.m-sector{margin-bottom:14px;}
+.m-sector-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-left:8px;border-left:3px solid;}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.m-card{border-radius:10px;padding:11px;position:relative;}
+.m-card.done{background:#00230f;border:1px solid #00c89650;}
+.m-card.partial{background:#1a1500;border:1px solid #ffd70040;}
+.m-card.pending{background:#160808;border:1px solid #ff4d4d30;}
+.m-card-title{font-size:11px;font-weight:700;color:#e0eaf8;line-height:1.3;margin-bottom:3px;padding-right:16px;}
+.m-card-sub{font-size:9px;color:#4a6a8a;}
+.m-card-tech{font-size:9px;color:#00c896;margin-top:2px;}
+.m-card-date{font-size:9px;color:#4a6a8a;}
+.m-dot{position:absolute;top:10px;right:10px;width:9px;height:9px;border-radius:50%;}
+.dot-g{background:#00c896;box-shadow:0 0 6px #00c896;}
+.dot-y{background:#ffd700;box-shadow:0 0 6px #ffd700;}
+.dot-r{background:#ff4d4d;box-shadow:0 0 6px #ff4d4d60;}
+.m-bar-track{height:3px;background:#1e2a3a;border-radius:2px;margin-top:7px;}
+.m-bar-fill{height:3px;border-radius:2px;}
+.m-footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:12px;border-top:1px solid #1e3a5a;}
+.m-footer-lbl{font-size:9px;color:#4a6a8a;}
+.m-legend{display:flex;gap:10px;}
+.m-leg-item{display:flex;align-items:center;gap:4px;font-size:9px;color:#7a9bbf;}
+.monitor-actions{display:flex;gap:8px;padding:12px 16px 0;}
+.act-btn{flex:1;padding:13px 6px;border:none;border-radius:12px;font-weight:700;font-size:12px;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;}
+.act-img{background:#1a7fd4;}.act-share{background:#00874f;}.act-mail{background:#6c3fb5;}
+
+/* LOADING */
+#mon-loading{display:none;position:fixed;inset:0;background:#000c;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#e0eaf8;font-size:14px;font-weight:600;}
+.spinner{width:36px;height:36px;border:3px solid #1e3a5a;border-top-color:#1a7fd4;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:#0a1a2e;border-top:1px solid #1e3a5a;display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom));}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--text3);font-size:9px;font-weight:600;padding:4px 2px;transition:color 0.15s;letter-spacing:0.3px;}
+.bnav-btn .ico{font-size:19px;line-height:1;}
+.bnav-btn.active{color:var(--blue);}
+
+/* PARTE DIARIO */
+.pd-entry{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.pd-entry-date{font-size:10px;color:var(--blue);font-weight:700;letter-spacing:0.5px;}
+.pd-entry-tech{font-size:10px;color:var(--green);margin-top:1px;}
+.pd-entry-sector{font-size:13px;font-weight:700;color:var(--text);margin-top:4px;}
+.pd-entry-desc{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.55;}
+.pd-del-btn{background:#ff4d4d15;border:1px solid #ff4d4d30;border-radius:8px;padding:5px 10px;color:var(--red);font-size:11px;font-weight:700;flex-shrink:0;}
+.field-label{font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;display:block;}
+.field-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:14px;outline:none;transition:border-color 0.15s;}
+.field-input:focus{border-color:var(--blue);}
+.field-group{margin-bottom:14px;}
+.select-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:14px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a6a8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+
+/* SEMESTRAL */
+.sem-check-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border2);}
+.sem-check-row:last-child{border-bottom:none;}
+.sem-cb{width:20px;height:20px;accent-color:var(--green);cursor:pointer;flex-shrink:0;}
+.sem-check-label{font-size:13px;color:var(--text2);flex:1;line-height:1.4;}
+.sem-check-row.ck .sem-check-label{color:var(--green);text-decoration:line-through;opacity:0.65;}
+.mark-all-btn{width:100%;padding:15px;background:linear-gradient(135deg,#00c896,#00a87a);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:15px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px #00c89630;}
+.mark-all-btn:active{opacity:0.85;}
+.sem-prog-box{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+
+/* NOTIFICACIONES */
+.notif-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
+.notif-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.notif-desc{font-size:12px;color:var(--text3);line-height:1.55;margin-bottom:12px;}
+.notif-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:none;border-radius:10px;font-weight:700;font-size:13px;color:#fff;cursor:pointer;}
+.n-wa{background:#25d366;}.n-mail{background:#6c3fb5;}.n-copy{background:#1a7fd4;}
+.tip-box{background:#1a7fd415;border:1px solid #1a7fd430;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#7ab8f5;line-height:1.6;}
+.tip-box strong{color:var(--blue);}
+.notif-row{display:flex;gap:8px;margin-bottom:8px;}
+.notif-row .field-input{flex:1;font-size:13px;padding:9px 12px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ HOME ══ -->
+<div id="screen-home" class="screen active">
+  <div class="sticky-header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:10px;letter-spacing:3px;color:var(--blue);font-weight:700;text-transform:uppercase;">FREMEC</div>
+        <div style="font-size:22px;font-weight:800;margin-top:2px;">Mantenimiento</div>
+        <div style="font-size:13px;color:var(--text3);">Preventivo</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <button onclick="navTo('history')" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--text2);font-size:12px;">📋 Historial</button>
+        <button onclick="navTo('monitor')" style="background:#1a7fd420;border:1px solid #1a7fd450;border-radius:10px;padding:8px 12px;color:var(--blue);font-size:12px;font-weight:700;">📊 Monitor</button>
+      </div>
+    </div>
+    <div class="week-nav">
+      <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
+      <span id="home-week-label"></span>
+      <button class="today-btn" onclick="goToToday()">Hoy</button>
+      <button class="nav-btn" onclick="changeWeek(1)">›</button>
+    </div>
+    <div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:6px;">
+        <span id="home-progress-label"></span>
+        <span id="home-progress-pct" style="font-weight:700;"></span>
+      </div>
+      <div class="progress-track"><div id="home-progress-fill" class="progress-fill" style="background:var(--blue);"></div></div>
+    </div>
+    <button onclick="navTo('summary')" style="width:100%;margin-top:12px;padding:12px;background:#1a7fd420;border:1px solid #1a7fd440;border-radius:10px;color:var(--blue);font-weight:700;font-size:14px;">Ver resumen de la semana →</button>
+  </div>
+  <div class="content-pad">
+    <!-- NC ALERTS -->
+    <div id="home-nc-alerts"></div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">Formularios semanales</div>
+    <div id="home-form-list"></div>
+  </div>
+</div>
+
+<!-- ══ FORM ══ -->
+<div id="screen-form" class="screen">
+  <div class="sticky-header">
+    <button class="back-btn" onclick="goBack()">← Volver</button>
+    <div id="form-title" style="font-size:18px;font-weight:700;"></div>
+    <div id="form-sub" style="font-size:12px;color:var(--text3);margin-top:2px;"></div>
+    <div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:5px;">
+        <span id="form-progress-label"></span><span id="form-progress-pct"></span>
+      </div>
+      <div class="progress-track"><div id="form-progress-fill" class="progress-fill" style="background:var(--blue);"></div></div>
+    </div>
+  </div>
+  <div class="content-pad" id="form-body"></div>
+</div>
+
+<!-- ══ SUMMARY ══ -->
+<div id="screen-summary" class="screen">
+  <div class="sticky-header">
+    <button class="back-btn" onclick="goBack()">← Volver</button>
+    <div style="font-size:18px;font-weight:700;">Resumen Semanal</div>
+    <div id="summary-week-label" style="font-size:12px;color:var(--text3);"></div>
+    <div class="stat-boxes">
+      <div class="stat-box stat-green"><div id="sum-done" class="num">0</div><div class="lbl">Realizados</div></div>
+      <div class="stat-box stat-red"><div id="sum-pend" class="num">0</div><div class="lbl">Pendientes</div></div>
+      <div class="stat-box stat-blue"><div id="sum-total" class="num">0</div><div class="lbl">Total</div></div>
+    </div>
+  </div>
+  <div class="content-pad" id="summary-body"></div>
+</div>
+
+<!-- ══ HISTORY ══ -->
+<div id="screen-history" class="screen">
+  <div class="sticky-header">
+    <button class="back-btn" onclick="goBack()">← Volver</button>
+    <div style="font-size:18px;font-weight:700;">Historial de Semanas</div>
+    <div id="history-sub" style="font-size:12px;color:var(--text3);"></div>
+  </div>
+  <div class="content-pad" id="history-body"></div>
+</div>
+
+<!-- ══ MONITOR ══ -->
+<div id="screen-monitor" class="screen">
+  <div class="sticky-header">
+    <button class="back-btn" onclick="goBack()">← Volver</button>
+    <div style="font-size:18px;font-weight:700;">Monitor Semanal</div>
+    <div id="monitor-week-label" style="font-size:12px;color:var(--text3);"></div>
+  </div>
+  <div class="monitor-actions">
+    <button class="act-btn act-img" onclick="downloadImage()">🖼 Imagen</button>
+    <button class="act-btn act-share" onclick="shareImage()">📤 Compartir</button>
+    <button class="act-btn act-mail" onclick="sendEmail()">✉️ Mail</button>
+  </div>
+  <div style="padding:14px;"><div id="monitor-canvas"></div></div>
+</div>
+
+<!-- ══ PARTE DIARIO ══ -->
+<div id="screen-daily" class="screen">
+  <div class="sticky-header">
+    <div style="font-size:10px;letter-spacing:3px;color:var(--blue);font-weight:700;text-transform:uppercase;margin-bottom:4px;">FREMEC</div>
+    <div style="font-size:20px;font-weight:800;">Parte Diario</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:2px;">Registro de trabajos realizados</div>
+  </div>
+  <div class="content-pad">
+    <!-- FORM CARD -->
+    <div class="card" style="margin-bottom:18px;">
+      <div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">➕ Nuevo registro</div>
+      <div class="field-group">
+        <label class="field-label">Fecha</label>
+        <input type="date" id="pd-fecha" class="field-input"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Sector / Máquina</label>
+        <input type="text" id="pd-sector" class="field-input" placeholder="Ej: Tornos CNC · MAQ 149"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Descripción del trabajo</label>
+        <textarea id="pd-desc" class="field-input" rows="4" placeholder="Describí el trabajo realizado, materiales usados, observaciones..."></textarea>
+      </div>
+      <button onclick="saveDailyEntry()" class="save-btn" style="margin-bottom:0;">Guardar registro</button>
+    </div>
+
+    <!-- ENTRIES LIST -->
+    <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Registros guardados</div>
+    <input type="search" class="search-bar" id="pd-search" placeholder="🔍  Buscar por sector o descripción..." oninput="renderDailyList()"/>
+    <div id="pd-list"></div>
+  </div>
+</div>
+
+<!-- ══ SEMESTRAL ══ -->
+<div id="screen-semestral" class="screen">
+  <div class="sticky-header">
+    <div style="font-size:10px;letter-spacing:3px;color:#6c3fb5;font-weight:700;text-transform:uppercase;margin-bottom:4px;">FREMEC</div>
+    <div style="font-size:20px;font-weight:800;">Preventivos Semestrales</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:2px;">Mantenimiento cada 6 meses</div>
+  </div>
+  <div class="content-pad">
+    <!-- Progress box -->
+    <div class="sem-prog-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:700;">Progreso semestral</span>
+        <span id="sem-pct-label" style="font-size:13px;font-weight:800;color:var(--green);">0%</span>
+      </div>
+      <div class="progress-track"><div id="sem-progress-fill" class="progress-fill" style="background:#6c3fb5;"></div></div>
+      <div id="sem-count-label" style="font-size:11px;color:var(--text3);margin-top:6px;">0 de 0 ítems completados</div>
+      <div class="sem-date-row">
+        <span class="sem-date-label">📅 Fecha de realización</span>
+        <input type="date" class="sem-date-input" id="sem-fecha" oninput="saveSemFecha()"/>
+      </div>
+      <div id="sem-venc-row" style="margin-top:6px;display:none;"></div>
+    </div>
+
+    <!-- Mark all button -->
+    <button class="mark-all-btn" id="sem-todo-ok-btn" onclick="markAllOK()">
+      <span style="font-size:18px;">✅</span> Todo OK
+    </button>
+
+    <!-- Sections -->
+    <div id="sem-sections"></div>
+
+    <!-- Save button -->
+    <button onclick="saveSemestral()" class="save-btn" style="background:#6c3fb5;">Guardar estado semestral</button>
+  </div>
+</div>
+
+<!-- ══ NOTIFICACIONES ══ -->
+<div id="screen-notif" class="screen">
+  <div class="sticky-header">
+    <div style="font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:4px;">FREMEC</div>
+    <div style="font-size:20px;font-weight:800;">Notificaciones</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:2px;">Recordatorios de mantenimiento</div>
+  </div>
+  <div class="content-pad">
+
+    <div class="tip-box">
+      <strong>💡 ¿Cómo funciona?</strong><br>
+      Completá el número o mail de destino y tocá el botón. Se abre WhatsApp o tu app de correo con el mensaje de recordatorio ya redactado, listo para enviar con un toque.
+    </div>
+
+    <!-- BACKUP -->
+    <div class="backup-card" style="border-color:#00c89640;">
+      <div class="notif-title" style="color:var(--green);">💾 Copia de seguridad</div>
+      <div class="notif-desc">Exportá todos los datos a un archivo JSON para guardar en tu dispositivo. Importá para restaurar desde un backup anterior.</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="backup-btn" style="background:#00874f;" onclick="exportData()">📥 Exportar datos</button>
+        <button class="backup-btn" style="background:#1a7fd4;" onclick="document.getElementById('import-file').click()">📤 Importar datos</button>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(this)"/>
+      <div id="backup-status" style="font-size:12px;color:var(--text3);margin-top:4px;"></div>
+    </div>
+
+    <!-- WHATSAPP -->
+    <div class="notif-card">
+      <div class="notif-title">💬 Recordatorio por WhatsApp</div>
+      <div class="notif-desc">Enviá un mensaje instantáneo al técnico o al grupo de mantenimiento. Incluye semana actual y formularios pendientes.</div>
+      <div class="notif-row">
+        <input type="tel" id="wa-number" class="field-input" placeholder="Número con código país · ej: 5491112345678" style="font-size:13px;padding:9px 12px;"/>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="notif-btn n-wa" onclick="sendWhatsApp('matias')">📲 Enviar a Matías</button>
+        <button class="notif-btn n-wa" onclick="sendWhatsApp('carlos')">📲 Enviar a Carlos</button>
+        <button class="notif-btn n-wa" onclick="sendWhatsApp('custom')">📲 Número personalizado</button>
+      </div>
+    </div>
+
+    <!-- EMAIL RECORDATORIO -->
+    <div class="notif-card">
+      <div class="notif-title">✉️ Recordatorio por Mail</div>
+      <div class="notif-desc">Abre tu app de correo con el asunto y cuerpo ya completados. Compatible con Gmail, Outlook y cualquier cliente de mail.</div>
+      <div class="notif-row">
+        <input type="email" id="mail-dest" class="field-input" placeholder="destinatario@empresa.com" style="font-size:13px;padding:9px 12px;"/>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="notif-btn n-mail" onclick="sendReminderMail()">✉️ Abrir correo</button>
+      </div>
+    </div>
+
+    <!-- GUIA EMAILJS -->
+    <div class="notif-card" style="border-color:#ffd70030;">
+      <div class="notif-title" style="color:var(--gold);">⚡ Envío automático con EmailJS</div>
+      <div class="notif-desc">
+        EmailJS permite enviar mails directamente desde la app sin servidor. Es gratuito hasta 200 mails/mes.<br><br>
+        <strong style="color:var(--text2);">Pasos para configurarlo:</strong><br>
+        1. Creá cuenta en <strong>emailjs.com</strong><br>
+        2. Conectá tu cuenta de Gmail o Outlook<br>
+        3. Creá un Template de recordatorio<br>
+        4. Copiá tu <strong>Service ID</strong>, <strong>Template ID</strong> y <strong>Public Key</strong><br>
+        5. Pegá los valores abajo y guardá
+      </div>
+      <div class="field-group">
+        <label class="field-label">Service ID</label>
+        <input type="text" id="ejs-service" class="field-input" placeholder="service_xxxxxxx" style="font-size:13px;padding:9px 12px;" oninput="saveEmailJSConfig()"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Template ID</label>
+        <input type="text" id="ejs-template" class="field-input" placeholder="template_xxxxxxx" style="font-size:13px;padding:9px 12px;" oninput="saveEmailJSConfig()"/>
+      </div>
+      <div class="field-group" style="margin-bottom:12px;">
+        <label class="field-label">Public Key</label>
+        <input type="text" id="ejs-key" class="field-input" placeholder="Tu Public Key de EmailJS" style="font-size:13px;padding:9px 12px;" oninput="saveEmailJSConfig()"/>
+      </div>
+      <button class="notif-btn n-copy" onclick="testEmailJS()">🧪 Probar envío</button>
+      <div id="ejs-status" style="font-size:12px;color:var(--text3);margin-top:8px;"></div>
+    </div>
+
+    <!-- WHATSAPP BUSINESS API NOTE -->
+    <div class="notif-card" style="border-color:#25d36630;">
+      <div class="notif-title" style="color:#25d366;">📌 Números internos guardados</div>
+      <div class="notif-desc">Configurá los números de WhatsApp de los técnicos para acceso rápido.</div>
+      <div class="field-group">
+        <label class="field-label">📱 Matías Roldán</label>
+        <input type="tel" id="wa-matias" class="field-input" placeholder="5491112345678" style="font-size:13px;padding:9px 12px;" oninput="saveContacts()"/>
+      </div>
+      <div class="field-group" style="margin-bottom:0;">
+        <label class="field-label">📱 Carlos Amaolo</label>
+        <input type="tel" id="wa-carlos" class="field-input" placeholder="5491112345678" style="font-size:13px;padding:9px 12px;" oninput="saveContacts()"/>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<!-- ══ PLANO ══ -->
+<div id="screen-plano" class="screen">
+  <div class="sticky-header">
+    <div style="font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:4px;">FREMEC</div>
+    <div style="font-size:20px;font-weight:800;">Plano de Planta</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:2px;">Tocá un sector para ver sus máquinas</div>
+  </div>
+  <div class="content-pad" style="padding-top:12px;">
+    <!-- Leyenda -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#1a7fd4;border-radius:3px;display:inline-block;"></span>Corte</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#9b59b6;border-radius:3px;display:inline-block;"></span>Pelado/Prensado</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#27ae60;border-radius:3px;display:inline-block;"></span>Inyección</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#e67e22;border-radius:3px;display:inline-block;"></span>Tornería</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#c0392b;border-radius:3px;display:inline-block;"></span>Fabricación</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#16a085;border-radius:3px;display:inline-block;"></span>Ensayos</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#f39c12;border-radius:3px;display:inline-block;"></span>Servicios</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><span style="width:12px;height:12px;background:#7f8c8d;border-radius:3px;display:inline-block;"></span>Depósito</span>
+    </div>
+    <!-- SVG Plano -->
+    <div style="overflow-x:auto;overflow-y:auto;border:1px solid var(--border);border-radius:14px;background:#0a1a2e;">
+      <svg id="plano-svg" viewBox="0 0 800 560" style="width:100%;min-width:340px;display:block;" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <!-- Panel de detalle -->
+    <div id="plano-detail" style="display:none;margin-top:14px;" class="card">
+      <div id="plano-detail-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav id="bottom-nav">
+  <button class="bnav-btn active" id="bnav-home" onclick="navTo('home')"><span class="ico">🏠</span>Inicio</button>
+  <button class="bnav-btn" id="bnav-daily" onclick="navTo('daily')"><span class="ico">📝</span>Parte Diario</button>
+  <button class="bnav-btn" id="bnav-plano" onclick="navTo('plano')"><span class="ico">🗺️</span>Plano</button>
+  <button class="bnav-btn" id="bnav-semestral" onclick="navTo('semestral')"><span class="ico">📅</span>Semestral</button>
+  <button class="bnav-btn" id="bnav-notif" onclick="navTo('notif')"><span class="ico">🔔</span>Avisos</button>
+</nav>
+
+<div id="mon-loading">
+  <div class="spinner"></div>
+  <span id="loading-msg">Generando imagen...</span>
+</div>
+<div id="toast">✓ Guardado</div>
+
+<script>
+// ══════════════════════════════════════════
+// FORMS DATA
+// ══════════════════════════════════════════
+const FORMS=[
+  {id:"despacho",title:"Selladoras / Zunchadoras",sector:"Despacho",machines:"201-200-199-197-195-253",
+   sections:[
+    {name:"ZUNCHADORA",items:[{key:"lz1",label:"Limpieza general"},{key:"lz2",label:"Ajuste de tornillería y tuercas"}]},
+    {name:"SELLADORA",items:[{key:"ls1",label:"Limpieza y control de motor"},{key:"ls2",label:"Lubricación y limpieza de guías"},{key:"ls3",label:"Limpieza resistencia y corrección de posición"},{key:"ls4",label:"Sopleteado engranajes"},{key:"ls5",label:"Inspección de cintas"},{key:"ls6",label:"Limpieza y control de motor 2"}]}
+   ]},
+  {id:"autoelevador",title:"Autoelevador / Apiladores",sector:"Depósito",machines:"152-184-243-66",
+   sections:[
+    {name:"General",items:[{key:"ag1",label:"Limpieza general"}]},
+    {name:"AUTOELEVADOR HANGCHA",items:[{key:"ah1",label:"Control engrase cadena & mástil"},{key:"ah2",label:"Nivel de aceite"},{key:"ah3",label:"Nivel de presión en cubiertas"},{key:"ah4",label:"Nivel de combustible"},{key:"ah5",label:"Nivel de líquido refrigerante"},{key:"ah6",label:"Inspección ruidos extraños"}]},
+    {name:"APILADORES",items:[{key:"ap1",label:"Ruidos extraños ruedas"},{key:"ap2",label:"Control engrase cadena & mástil"},{key:"ap3",label:"Nivel de agua desmineralizada"}]}
+   ]},
+  {id:"compresores",title:"Compresores Sullair",sector:"Servicios",machines:"187-261",
+   sections:[
+    {name:"General",items:[{key:"cg1",label:"Limpieza general carcasa y piso"}]},
+    {name:"UNIDAD COMPRESORA",items:[{key:"cu1",label:"Funcionamiento 10'"},{key:"cu2",label:"Inspección pérdidas de aceite"},{key:"cu3",label:"Nivel de aceite"},{key:"cu4",label:"Limpieza filtro de aspiración"},{key:"cu5",label:"Inspección ruidos extraños"}]},
+    {name:"DATOS PANTALLA",items:[{key:"cd1",label:"Hs uso MAQ 187",type:"text"},{key:"cd2",label:"Hs uso MAQ 261",type:"text"},{key:"cd3",label:"Temperatura MAQ 187",type:"text"},{key:"cd4",label:"Temperatura MAQ 261",type:"text"},{key:"cd5",label:"Mensaje anormal o testigo"}]},
+    {name:"CONSUMO Y TENSIÓN · MAQ 187",items:[{key:"ct187_estado",label:"Estado consumo y tensión MAQ 187"},{key:"ct187_fase_r",label:"Fase R (A)",type:"text"},{key:"ct187_fase_s",label:"Fase S (A)",type:"text"},{key:"ct187_fase_t",label:"Fase T (A)",type:"text"},{key:"ct187_voltaje",label:"Voltaje (V)",type:"text"}]},
+    {name:"CONSUMO Y TENSIÓN · MAQ 261",items:[{key:"ct261_estado",label:"Estado consumo y tensión MAQ 261"},{key:"ct261_fase_r",label:"Fase R (A)",type:"text"},{key:"ct261_fase_s",label:"Fase S (A)",type:"text"},{key:"ct261_fase_t",label:"Fase T (A)",type:"text"},{key:"ct261_voltaje",label:"Voltaje (V)",type:"text"}]}
+   ]},
+  {id:"aspiradoras_vaina",title:"Aspiradoras Corte Vaina",sector:"Corte de vaina",machines:"128-181",
+   sections:[
+    {name:"General",items:[{key:"avg1",label:"Limpieza general"}]},
+    {name:"ASPIRADORA",items:[{key:"av1",label:"Limpieza filtros a contracorriente"},{key:"av2",label:"Vaciado tacho contenedor"},{key:"av3",label:"Limpieza parte limpia"},{key:"av4",label:"Control auditivo limpieza automática"},{key:"av5",label:"Control mangueras de aire"},{key:"av6",label:"Limpieza sólidos en mangueras"}]},
+    {name:"CORTADORAS",items:[{key:"ac1",label:"Ajuste tornillería y tuercas"},{key:"ac2",label:"Control mangueras de aire"},{key:"ac3",label:"Limpieza sólidos en máquina"},{key:"ac4",label:"Limpieza cilindros neumáticos"},{key:"ac5",label:"Control y limpieza de sensores"}]}
+   ]},
+  {id:"inyectoras",title:"Inyectoras PL / Micro",sector:"Inyección",machines:"144·145·229·185·251·239",
+   sections:[
+    {name:"General",items:[{key:"ig1",label:"Limpieza general"}]},
+    {name:"PL - FULLY PIMM",items:[{key:"ip1",label:"Limpieza bandeja de tornillo"},{key:"ip2",label:"Limpieza filtro de aspiración"},{key:"ip3",label:"Control nivel aceite hidráulico"},{key:"ip4",label:"Control nivel aceite auto lubricación"},{key:"ip5",label:"Lubricación unidad de cierre"},{key:"ip6",label:"Lubricación unidad inyectora"},{key:"ip7",label:"Control mangueras hidráulicas"},{key:"ip8",label:"Control mangueras de agua"}]},
+    {name:"MI - OBONIC",items:[{key:"im1",label:"Control cableado de tablero"},{key:"im2",label:"Control mangueras de aire"},{key:"im3",label:"Control estado de horno"},{key:"im4",label:"Control sistema de carga"},{key:"im5",label:"Control protecciones de seguridad"}]}
+   ]},
+  {id:"generador",title:"Generador CETEC",sector:"Servicios",machines:"170",
+   sections:[
+    {name:"General",items:[{key:"gg1",label:"Limpieza general"}]},
+    {name:"MOTOR",items:[{key:"gm1",label:"Nivel líquido refrigerante"},{key:"gm2",label:"Inspección pérdidas de aceite"},{key:"gm3",label:"Encendido en vacío 15'"},{key:"gm4",label:"Inspección ruidos extraños"}]},
+    {name:"DATOS PANTALLA",items:[{key:"gd1",label:"Revoluciones RPM",type:"text"},{key:"gd2",label:"Presión de aceite",type:"text"},{key:"gd3",label:"Temperatura del motor",type:"text"},{key:"gd4",label:"Nivel de combustible",type:"text"},{key:"gd5",label:"Voltaje batería",type:"text"},{key:"gd6",label:"Horas de uso",type:"text"},{key:"gd7",label:"Nivel de aceite",type:"text"}]}
+   ]},
+  {id:"tornos_cnc",title:"Tornos CNC Camporesi",sector:"Tornería",machines:"149·150·167·169·173·178",
+   sections:[
+    {name:"General",items:[{key:"tg1",label:"Limpieza general exterior"},{key:"tg2",label:"Ajuste tornillería & abrazaderas"},{key:"tg3",label:"Engrase alemites de carro"}]},
+    {name:"CENTRAL HIDRÁULICA TORNO",items:[{key:"th1",label:"Control nivel aceite y pérdidas"},{key:"th2",label:"Presión en manómetro"},{key:"th3",label:"Estado filtro de saturación"},{key:"th4",label:"Limpieza motor de la bomba"},{key:"th5",label:"Ajuste abrazaderas de mangueras"}]},
+    {name:"CENTRAL HIDRÁULICA ALIMENTADOR",items:[{key:"ta1",label:"Control nivel de aceite"},{key:"ta2",label:"Limpieza de filtro"},{key:"ta3",label:"Control ruidos y vibraciones"},{key:"ta4",label:"Ajuste abrazaderas de mangueras"}]}
+   ]},
+  {id:"prensas",title:"Prensas Neumáticas / PH",sector:"Ensamblado",machines:"Celdas - PH Flexible frenos",
+   sections:[
+    {name:"General",items:[{key:"pg1",label:"Limpieza general"},{key:"pg2",label:"Ajuste tornillería & abrazaderas"}]},
+    {name:"PARTES MÓVILES",items:[{key:"pm1",label:"Lubricación rótulas y uniones"},{key:"pm2",label:"Lubricación cojinete guía"}]},
+    {name:"CAJA ELÉCTRICA",items:[{key:"pe1",label:"Funcionamiento de contadores"},{key:"pe2",label:"Control de cableado"}]},
+    {name:"CONEXIONES NEUMÁTICAS",items:[{key:"pn1",label:"Pérdidas de aire & mangueras"},{key:"pn2",label:"Control agua y aceite en FRL"}]}
+   ]}
+];
+
+// Semestral items
+const SEM_ITEMS=[
+  {sec:"TORNOS CNC",items:[
+    {key:"s_cambio_aceite_hidraulico",label:"Cambio de aceite hidráulico"},
+    {key:"s_cambio_aceite_alimentador",label:"Cambio de aceite alimentador de barras"},
+    {key:"s_inspeccion_correas",label:"Inspección y tensado de correas"},
+    {key:"s_limpieza_filtros_refrigerante",label:"Limpieza filtros de refrigerante"},
+    {key:"s_inspeccion_mandril",label:"Inspección y lubricación del mandril"},
+    {key:"s_verificacion_presion_hidraulica",label:"Verificación presión hidráulica"},
+  ]},
+  {sec:"COMPRESORES",items:[
+    {key:"s_cambio_aceite_compresor",label:"Cambio de aceite compresor"},
+    {key:"s_cambio_filtro_aceite",label:"Cambio filtro de aceite"},
+    {key:"s_cambio_filtro_separador",label:"Cambio filtro separador"},
+    {key:"s_inspeccion_valvula_minima",label:"Inspección válvula de mínima presión"},
+    {key:"s_limpieza_enfriador",label:"Limpieza de enfriador (radiador)"},
+  ]},
+  {sec:"AUTOELEVADOR HANGCHA",items:[
+    {key:"s_cambio_aceite_motor",label:"Cambio de aceite de motor"},
+    {key:"s_cambio_filtro_aceite_auto",label:"Cambio filtro de aceite"},
+    {key:"s_cambio_filtro_aire",label:"Cambio filtro de aire"},
+    {key:"s_inspeccion_frenos",label:"Inspección sistema de frenos"},
+    {key:"s_ajuste_cadenas",label:"Ajuste y lubricación de cadenas"},
+    {key:"s_inspeccion_horquillas",label:"Inspección de horquillas y mástil"},
+  ]},
+  {sec:"GENERADOR",items:[
+    {key:"s_cambio_aceite_gen",label:"Cambio de aceite de motor"},
+    {key:"s_cambio_filtro_aceite_gen",label:"Cambio filtro de aceite"},
+    {key:"s_cambio_filtro_combustible",label:"Cambio filtro de combustible"},
+    {key:"s_inspeccion_bateria",label:"Inspección y prueba de batería"},
+    {key:"s_inspeccion_alternador",label:"Inspección del alternador"},
+  ]},
+  {sec:"INYECTORAS",items:[
+    {key:"s_cambio_aceite_iny",label:"Cambio de aceite hidráulico"},
+    {key:"s_limpieza_unidad_inyeccion",label:"Limpieza profunda unidad de inyección"},
+    {key:"s_inspeccion_resistencias",label:"Inspección resistencias de calefacción"},
+    {key:"s_verificacion_termocuplas",label:"Verificación de termocuplas"},
+  ]}
+];
+
+// ══════════════════════════════════════════
+// STATE & STORAGE
+// ══════════════════════════════════════════
+let S={
+  screen:'home',prev:'home',
+  curWeek:wkKey(new Date()),viewWeek:wkKey(new Date()),
+  formId:null,ro:false,weeks:{},
+  daily:[],semChecks:{},semFecha:'',contacts:{},ejsConfig:{}
+};
+
+function load(){
+  try{const r=localStorage.getItem('fremec3');if(r){const d=JSON.parse(r);Object.assign(S,d);}}catch(e){}
+}
+function save(){
+  try{localStorage.setItem('fremec3',JSON.stringify({weeks:S.weeks,daily:S.daily,semChecks:S.semChecks,semFecha:S.semFecha,contacts:S.contacts,ejsConfig:S.ejsConfig}));}catch(e){}
+}
+function wd(wk){return S.weeks[wk||S.viewWeek]||{};}
+function ensureForm(){
+  const w=S.viewWeek,f=S.formId;
+  if(!S.weeks[w])S.weeks[w]={};
+  if(!S.weeks[w].forms)S.weeks[w].forms={};
+  if(!S.weeks[w].forms[f])S.weeks[w].forms[f]={values:{}};
+  if(!S.weeks[w].forms[f].values)S.weeks[w].forms[f].values={};
+}
+
+// ══════════════════════════════════════════
+// WEEK HELPERS
+// ══════════════════════════════════════════
+function wkKey(d){
+  d=new Date(d);d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+4-(d.getDay()||7));
+  const y=new Date(d.getFullYear(),0,1);
+  const n=Math.ceil((((d-y)/86400000)+1)/7);
+  return `${d.getFullYear()}-W${String(n).padStart(2,'0')}`;
+}
+function wkLabel(k){
+  const[yr,wn]=k.split('-W');
+  const j=new Date(+yr,0,1),dw=j.getDay()||7;
+  const s=new Date(j);s.setDate(j.getDate()+(+wn-1)*7-(dw-1));
+  const e=new Date(s);e.setDate(s.getDate()+6);
+  const f=d=>`${d.getDate()}/${d.getMonth()+1}`;
+  return `Semana ${wn}/${yr} · ${f(s)} – ${f(e)}`;
+}
+function changeWeek(d){
+  const[yr,wn]=S.viewWeek.split('-W');
+  let w=+wn+d,y=+yr;
+  if(w<1){w=52;y--;}if(w>52){w=1;y++;}
+  S.viewWeek=`${y}-W${String(w).padStart(2,'0')}`;
+  renderHome();
+}
+function goToToday(){S.viewWeek=S.curWeek;renderHome();}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+const NAV_SCREENS=['home','daily','semestral','notif'];
+function showScr(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+  // update bottom nav
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('bnav-'+id);
+  if(nb)nb.classList.add('active');
+}
+function navTo(id){
+  const prev=S.screen;
+  S.prev=prev;S.screen=id;
+  if(id==='home')renderHome();
+  if(id==='summary')renderSummary();
+  if(id==='history')renderHistory();
+  if(id==='monitor')renderMonitor();
+  if(id==='daily')renderDaily();
+  if(id==='semestral')renderSemestral();
+  if(id==='notif')renderNotif();
+  if(id==='plano')renderPlano();
+  showScr(id);
+}
+function goBack(){navTo(S.prev||'home');}
+function sbadge(v){
+  if(!v)return'<span class="badge badge-gray">—</span>';
+  return`<span class="badge ${v==='OK'?'badge-green':v==='NC'?'badge-red':'badge-gray'}">${v}</span>`;
+}
+
+// ══════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════
+function renderHome(){
+  const w=wd();
+  const done=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+  const pct=Math.round(done/FORMS.length*100);
+  document.getElementById('home-week-label').textContent=wkLabel(S.viewWeek);
+  document.getElementById('home-progress-label').textContent=`${done} de ${FORMS.length} formularios completados`;
+  document.getElementById('home-progress-pct').textContent=`${pct}%`;
+  document.getElementById('home-progress-pct').style.color=done===FORMS.length?'var(--green)':'var(--text2)';
+  const fi=document.getElementById('home-progress-fill');
+  fi.style.width=pct+'%';fi.style.background=done===FORMS.length?'var(--green)':'var(--blue)';
+
+  // NC ALERTS
+  const ncItems=[];
+  FORMS.forEach(form=>{
+    const fd=w?.forms?.[form.id];if(!fd)return;
+    form.sections.forEach(sec=>{
+      sec.items.filter(i=>!i.type).forEach(item=>{
+        if(fd.values?.[item.key]?.status==='NC'){
+          ncItems.push({formTitle:form.title,label:item.label,formId:form.id});
+        }
+      });
+    });
+  });
+  const ncEl=document.getElementById('home-nc-alerts');
+  if(ncItems.length>0){
+    ncEl.innerHTML=`<div class="nc-alert-card">
+      <div class="nc-alert-title">⚠ ${ncItems.length} ítem${ncItems.length>1?'s':''} No Conforme${ncItems.length>1?'s':''} esta semana</div>
+      ${ncItems.map(n=>`<div class="nc-alert-item" onclick="openForm('${n.formId}',false)" style="cursor:pointer;">
+        <span class="nc-alert-form">NC</span>
+        <span class="nc-alert-label">${n.label} <span style="color:var(--text3);font-size:11px;">· ${n.formTitle}</span></span>
+        <span style="color:var(--text3);font-size:12px;">→</span>
+      </div>`).join('')}
+    </div>`;
+  } else {
+    ncEl.innerHTML='';
+  }
+  document.getElementById('home-form-list').innerHTML=FORMS.map(form=>{
+    const fd=w?.forms?.[form.id];
+    const isDone=!!fd?.completedAt;
+    const ci=form.sections.flatMap(s=>s.items.filter(i=>!i.type));
+    const filled=ci.filter(i=>fd?.values?.[i.key]?.status).length;
+    const inp=!isDone&&filled>0;
+    const ipct=ci.length>0?(filled/ci.length)*100:0;
+    const badge=isDone?'<span class="badge badge-green">✓ HECHO</span>':inp?'<span class="badge badge-yellow">En curso</span>':'<span class="badge badge-gray">Pendiente</span>';
+    const pbar=inp?`<div style="margin-top:10px;"><div class="progress-track" style="height:4px;"><div class="progress-fill" style="width:${ipct}%;background:var(--gold);height:4px;"></div></div><div style="font-size:10px;color:var(--text3);margin-top:3px;">${filled}/${ci.length} ítems</div></div>`:'';
+    return`<div class="form-list-item ${isDone?'done':''}" onclick="openForm('${form.id}',false)">
+      ${isDone?'<div class="left-accent"></div>':''}
+      <div style="flex:1;"><div class="item-title">${form.title}</div><div class="item-sub">${form.sector} · ${form.machines}</div>${fd?.technician?`<div class="item-tech">👤 ${fd.technician}</div>`:''}${pbar}</div>
+      <div class="badge-wrap">${badge}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// FORM
+// ══════════════════════════════════════════
+function openForm(id,ro){S.prev=S.screen;S.formId=id;S.ro=ro||false;renderForm();showScr('form');S.screen='form';}
+function renderForm(){
+  const form=FORMS.find(f=>f.id===S.formId);if(!form)return;
+  const fd=wd()?.forms?.[form.id]||{};const vals=fd.values||{};const ro=S.ro;
+  document.getElementById('form-title').textContent=form.title;
+  document.getElementById('form-sub').textContent=`${form.sector} · ${form.machines}`;
+  const ci=form.sections.flatMap(s=>s.items.filter(i=>!i.type));
+  const filled=ci.filter(i=>vals[i.key]?.status).length;
+  const pct=ci.length>0?Math.round(filled/ci.length*100):0;
+  document.getElementById('form-progress-label').textContent=`${filled}/${ci.length} ítems`;
+  document.getElementById('form-progress-pct').textContent=`${pct}%`;
+  const pf=document.getElementById('form-progress-fill');
+  pf.style.width=pct+'%';pf.style.background=pct===100?'var(--green)':'var(--blue)';
+  let h='';
+  if(!ro){
+    const selStyle=`width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:${fd.technician?'var(--text)':'var(--text3)'};padding:10px 12px;font-size:14px;margin-bottom:10px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a6a8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;`;
+    h+=`<div class="card" style="margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--text3);font-weight:600;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">Datos del técnico</div>
+      <select style="${selStyle}" onchange="ff('technician',this.value)">
+        <option value="" ${!fd.technician?'selected':''}>Seleccionar técnico...</option>
+        <option value="Matías Roldán" ${fd.technician==='Matías Roldán'?'selected':''}>Matías Roldán</option>
+        <option value="Carlos Amaolo" ${fd.technician==='Carlos Amaolo'?'selected':''}>Carlos Amaolo</option>
+      </select>
+      <input type="date" value="${fd.completedDate||''}" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:14px;outline:none;" oninput="ff('completedDate',this.value)"/>
+    </div>`;
+  } else if(fd.technician||fd.completedDate){
+    h+=`<div class="card" style="margin-bottom:16px;">${fd.technician?`<div style="font-size:13px;color:var(--green);margin-bottom:4px;">👤 ${fd.technician}</div>`:''}${fd.completedDate?`<div style="font-size:13px;color:var(--text3);">📅 ${fd.completedDate}</div>`:''}</div>`;
+  }
+  form.sections.forEach(sec=>{
+    h+=`<div class="section-label">${sec.name}</div><div class="form-items-card">`;
+    sec.items.forEach(item=>{
+      if(item.type){
+        const v=vals[item.key]?.val||'';
+        h+=ro?`<div class="readonly-row"><span class="readonly-label">${item.label}</span><span class="readonly-val">${v||'—'}</span></div>`
+          :`<div class="data-row"><div class="data-label">${item.label}</div><input type="text" class="data-input" value="${v}" placeholder="Ingresá el valor..." oninput="fv('${item.key}',this.value)"/></div>`;
+      } else {
+        const cur=vals[item.key]?.status||'';
+        h+=ro?`<div class="readonly-row"><span class="readonly-label">${item.label}</span>${sbadge(cur)}</div>`
+          :`<div class="status-row"><div class="status-label">${item.label}</div><div class="status-btns">
+            <button class="status-btn ${cur==='OK'?'ok':''}" onclick="fs('${item.key}','OK')">OK</button>
+            <button class="status-btn ${cur==='NC'?'nc':''}" onclick="fs('${item.key}','NC')">NC</button>
+            <button class="status-btn ${cur==='N/A'?'na':''}" onclick="fs('${item.key}','N/A')">N/A</button>
+          </div></div>`;
+      }
+    });
+    h+='</div>';
+  });
+  h+=`<div class="section-label" style="margin-top:16px;">COMENTARIOS</div>
+    <textarea rows="4" placeholder="Observaciones adicionales..." style="width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;color:var(--text);padding:14px;font-size:14px;outline:none;" ${ro?'readonly':''} oninput="ff('comments',this.value)">${fd.comments||''}</textarea>`;
+  if(!ro){
+    const allCheckItems2=form.sections.flatMap(s=>s.items.filter(i=>!i.type));
+    const allOK2=allCheckItems2.length>0&&allCheckItems2.every(i=>vals[i.key]?.status==='OK');
+    h+=`<button class="mark-all-btn" id="todo-ok-btn" onclick="markFormAllOK()" style="margin-bottom:8px;background:${allOK2?'linear-gradient(135deg,#1a7fd4,#0d5fa8)':'linear-gradient(135deg,#00c896,#00a87a)'};"><span style="font-size:18px;">${allOK2?'↩':'✅'}</span> ${allOK2?'Desmarcar todo':'Todo OK'}</button>`;
+    h+=`<button class="save-btn" id="save-btn" onclick="saveForm()">Guardar formulario</button>`;
+  }
+  document.getElementById('form-body').innerHTML=h;
+}
+function fs(key,status){
+  ensureForm();S.weeks[S.viewWeek].forms[S.formId].values[key]={status};save();
+  const row=event.target.closest('.status-btns');
+  if(row)row.querySelectorAll('.status-btn').forEach(b=>{b.className='status-btn';if(b.textContent===status)b.classList.add(status==='OK'?'ok':status==='NC'?'nc':'na');});
+  updFProg();
+}
+function fv(key,val){ensureForm();S.weeks[S.viewWeek].forms[S.formId].values[key]={val};save();}
+function ff(field,val){ensureForm();S.weeks[S.viewWeek].forms[S.formId][field]=val;save();}
+function updFProg(){
+  const form=FORMS.find(f=>f.id===S.formId);if(!form)return;
+  const ci=form.sections.flatMap(s=>s.items.filter(i=>!i.type));
+  const vals=wd()?.forms?.[form.id]?.values||{};
+  const filled=ci.filter(i=>vals[i.key]?.status).length;
+  const pct=ci.length>0?Math.round(filled/ci.length*100):0;
+  document.getElementById('form-progress-label').textContent=`${filled}/${ci.length} ítems`;
+  document.getElementById('form-progress-pct').textContent=`${pct}%`;
+  const pf=document.getElementById('form-progress-fill');
+  pf.style.width=pct+'%';pf.style.background=pct===100?'var(--green)':'var(--blue)';
+}
+function markFormAllOK(){
+  const form=FORMS.find(f=>f.id===S.formId);if(!form)return;
+  ensureForm();
+  const allCheckItems=form.sections.flatMap(s=>s.items.filter(i=>!i.type));
+  const allOK=allCheckItems.every(i=>S.weeks[S.viewWeek].forms[S.formId].values[i.key]?.status==='OK');
+  if(allOK){
+    // Desmarcar todo
+    allCheckItems.forEach(i=>{delete S.weeks[S.viewWeek].forms[S.formId].values[i.key];});
+    save();renderForm();toast('↩ Ítems desmarcados');
+  } else {
+    // Marcar todo OK
+    allCheckItems.forEach(i=>{S.weeks[S.viewWeek].forms[S.formId].values[i.key]={status:'OK'};});
+    save();renderForm();toast('✅ Todos los ítems marcados como OK');
+  }
+}
+
+function saveForm(){
+  ensureForm();S.weeks[S.viewWeek].forms[S.formId].completedAt=new Date().toISOString();save();
+  const btn=document.getElementById('save-btn');
+  if(btn){btn.textContent='✓ Guardado';btn.classList.add('saved');}
+  toast('✓ Formulario guardado');setTimeout(()=>renderHome(),300);
+}
+
+// ══════════════════════════════════════════
+// SUMMARY
+// ══════════════════════════════════════════
+function renderSummary(){
+  const w=wd();
+  document.getElementById('summary-week-label').textContent=wkLabel(S.viewWeek);
+  const done=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt);
+  const pend=FORMS.filter(f=>!w?.forms?.[f.id]?.completedAt);
+  document.getElementById('sum-done').textContent=done.length;
+  document.getElementById('sum-pend').textContent=pend.length;
+  document.getElementById('sum-total').textContent=FORMS.length;
+  let h='';
+  if(done.length){
+    h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div style="font-size:11px;font-weight:700;color:var(--green);letter-spacing:1.5px;text-transform:uppercase;">✓ Realizados</div><button onclick="navTo('monitor')" style="background:#1a7fd420;border:1px solid #1a7fd440;border-radius:8px;padding:5px 12px;color:var(--blue);font-size:11px;font-weight:700;">📊 Monitor</button></div>`;
+    done.forEach(f=>{
+      const fd=w?.forms?.[f.id];
+      h+=`<div class="card card-green" style="cursor:pointer;" onclick="openFormSum('${f.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div><div style="font-weight:700;font-size:14px;">${f.title}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${f.sector}</div>
+          ${fd?.technician?`<div style="font-size:11px;color:var(--green);margin-top:3px;">👤 ${fd.technician}</div>`:''}
+          ${fd?.completedDate?`<div style="font-size:11px;color:var(--text3);">📅 ${fd.completedDate}</div>`:''}</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><span class="badge badge-green">HECHO</span><span style="font-size:10px;color:var(--text3);">Ver →</span></div>
+        </div></div>`;
+    });
+  }
+  if(pend.length){
+    h+=`<div style="font-size:11px;font-weight:700;color:var(--red);letter-spacing:1.5px;text-transform:uppercase;margin-top:16px;margin-bottom:10px;">✗ Pendientes</div>`;
+    pend.forEach(f=>{
+      h+=`<div class="card card-red" style="cursor:pointer;opacity:.85;" onclick="openFormSum('${f.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-weight:700;font-size:14px;">${f.title}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${f.sector}</div></div>
+          <span class="badge badge-red">PENDIENTE</span>
+        </div></div>`;
+    });
+  }
+  document.getElementById('summary-body').innerHTML=h;
+}
+function openFormSum(id){const isDone=!!wd()?.forms?.[id]?.completedAt;S.prev='summary';openForm(id,isDone);}
+
+// ══════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════
+function renderHistory(){
+  const weeks=Object.keys(S.weeks).sort().reverse();
+  document.getElementById('history-sub').textContent=`${weeks.length} semanas registradas`;
+  if(!weeks.length){document.getElementById('history-body').innerHTML=`<div style="text-align:center;color:var(--text3);margin-top:60px;"><div style="font-size:40px;margin-bottom:12px;">📋</div><div>No hay semanas guardadas aún</div></div>`;return;}
+
+  // Calcular NC recurrentes (aparecen NC en 2+ semanas)
+  const ncCount={};
+  weeks.forEach(wk=>{
+    const w=S.weeks[wk];
+    FORMS.forEach(form=>{
+      const fd=w?.forms?.[form.id];if(!fd)return;
+      form.sections.forEach(sec=>{
+        sec.items.filter(i=>!i.type).forEach(item=>{
+          if(fd.values?.[item.key]?.status==='NC'){
+            const k=`${form.title}|${item.label}`;
+            ncCount[k]=(ncCount[k]||0)+1;
+          }
+        });
+      });
+    });
+  });
+  const recurringNC=Object.entries(ncCount).filter(([,v])=>v>=2).sort((a,b)=>b[1]-a[1]);
+
+  let h='';
+  // NC recurrentes panel
+  if(recurringNC.length>0){
+    h+=`<div class="nc-alert-card" style="margin-bottom:16px;">
+      <div class="nc-alert-title">🔁 NC Recurrentes (${recurringNC.length})</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Ítems que fallaron en 2 o más semanas</div>
+      ${recurringNC.map(([k,v])=>{const[form,label]=k.split('|');return`<div class="nc-alert-item">
+        <span class="nc-alert-form">${v}x</span>
+        <span class="nc-alert-label">${label} <span style="color:var(--text3);font-size:11px;">· ${form}</span></span>
+      </div>`;}).join('')}
+    </div>`;
+  }
+
+  document.getElementById('history-body').innerHTML=h+weeks.map((wk,idx)=>{
+    const w=S.weeks[wk];
+    const dn=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+    const pct=Math.round(dn/FORMS.length*100);
+    const col=pct===100?'var(--green)':pct>50?'var(--gold)':'var(--red)';
+    const chips=FORMS.map(f=>{const ok=!!w?.forms?.[f.id]?.completedAt;return`<span class="chip ${ok?'chip-done':'chip-pend'}">${f.title.split(' ')[0]}</span>`;}).join('');
+    // NC count for this week
+    let weekNC=0;
+    FORMS.forEach(f=>{const fd=w?.forms?.[f.id];if(!fd)return;Object.values(fd.values||{}).forEach(v=>{if(v?.status==='NC')weekNC++;});});
+    // Trend vs previous week
+    let trendHtml='';
+    if(idx<weeks.length-1){
+      const prevWk=weeks[idx+1];const prevW=S.weeks[prevWk];
+      const prevDn=FORMS.filter(f=>prevW?.forms?.[f.id]?.completedAt).length;
+      const prevPct=Math.round(prevDn/FORMS.length*100);
+      const diff=pct-prevPct;
+      if(diff>0)trendHtml=`<span class="trend-up">↑ +${diff}%</span>`;
+      else if(diff<0)trendHtml=`<span class="trend-dn">↓ ${diff}%</span>`;
+      else trendHtml=`<span class="trend-eq">→ Sin cambio</span>`;
+    }
+    return`<div class="card" style="cursor:pointer;" onclick="pickHistWeek('${wk}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+        <div style="font-weight:700;font-size:15px;">${wkLabel(wk)}</div>
+        ${trendHtml?`<span style="font-size:11px;">${trendHtml}</span>`:''}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;color:var(--text3);">${dn}/${FORMS.length} formularios${weekNC>0?`<span class="nc-hist-badge">⚠ ${weekNC} NC</span>`:''}</span>
+        <span style="font-size:12px;font-weight:700;color:${col};">${pct}%</span>
+      </div>
+      <div class="progress-track" style="height:6px;margin-bottom:10px;"><div class="progress-fill" style="width:${pct}%;background:${col};height:6px;"></div></div>
+      <div class="chip-list">${chips}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="event.stopPropagation();pickHistMon('${wk}')" style="background:#1a7fd420;border:1px solid #1a7fd440;border-radius:8px;padding:6px 12px;color:var(--blue);font-size:11px;font-weight:700;flex:1;">📊 Monitor</button>
+        <button onclick="event.stopPropagation();pickHistWeek('${wk}')" style="background:var(--border2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text2);font-size:11px;flex:1;">📋 Resumen</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function pickHistWeek(wk){S.viewWeek=wk;S.prev='history';renderSummary();showScr('summary');S.screen='summary';}
+function pickHistMon(wk){S.viewWeek=wk;S.prev='history';renderMonitor();showScr('monitor');S.screen='monitor';}
+
+// ══════════════════════════════════════════
+// MONITOR
+// ══════════════════════════════════════════
+function renderMonitor(){
+  const w=wd();
+  document.getElementById('monitor-week-label').textContent=wkLabel(S.viewWeek);
+  const totalDone=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+  const pct=Math.round(totalDone/FORMS.length*100);
+  const col=pct===100?'#00c896':pct>=60?'#ffd700':'#ff4d4d';
+  const now=new Date();
+  const ds=`${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+
+  // Trend vs previous week
+  const[yr,wn]=S.viewWeek.split('-W');
+  let pw=+wn-1,py=+yr;if(pw<1){pw=52;py--;}
+  const prevKey=`${py}-W${String(pw).padStart(2,'0')}`;
+  const prevW=S.weeks[prevKey];
+  let trendTxt='';
+  if(prevW){
+    const prevDone=FORMS.filter(f=>prevW?.forms?.[f.id]?.completedAt).length;
+    const prevPct=Math.round(prevDone/FORMS.length*100);
+    const diff=pct-prevPct;
+    if(diff>0)trendTxt=`<span style="color:#00c896;font-weight:700;font-size:11px;">↑ +${diff}% vs semana anterior</span>`;
+    else if(diff<0)trendTxt=`<span style="color:#ff4d4d;font-weight:700;font-size:11px;">↓ ${diff}% vs semana anterior</span>`;
+    else trendTxt=`<span style="color:#4a6a8a;font-size:11px;">→ Igual que semana anterior</span>`;
+  }
+
+  const sectors={};
+  FORMS.forEach(f=>{if(!sectors[f.sector])sectors[f.sector]=[];sectors[f.sector].push(f);});
+  let h=`<div class="m-header">
+    <div><div class="m-logo">FREMEC</div><div class="m-title">Mantenimiento Preventivo</div><div class="m-week">${wkLabel(S.viewWeek)}</div>${trendTxt?`<div style="margin-top:4px;">${trendTxt}</div>`:''}</div>
+    <div><div class="m-pct" style="color:${col}">${pct}%</div><div class="m-pct-lbl">${totalDone}/${FORMS.length} completados</div></div>
+  </div>
+  <div style="background:#1e2a3a;border-radius:6px;height:10px;overflow:hidden;margin-bottom:18px;">
+    <div style="width:${pct}%;background:${col};height:10px;border-radius:6px;"></div>
+  </div>`;
+  Object.entries(sectors).forEach(([sName,forms])=>{
+    const sd=forms.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+    const sc=sd===forms.length?'#00c896':sd>0?'#ffd700':'#ff4d4d';
+    h+=`<div class="m-sector"><div class="m-sector-title" style="color:${sc};border-color:${sc};">${sName} &nbsp;·&nbsp; <span style="font-size:9px;font-weight:400;opacity:.7;">${sd}/${forms.length}</span></div><div class="m-grid">`;
+    forms.forEach(form=>{
+      const fd=w?.forms?.[form.id]||{};const vals=fd.values||{};
+      const ci=form.sections.flatMap(s=>s.items.filter(i=>!i.type));
+      const filled=ci.filter(i=>vals[i.key]?.status).length;
+      const fpct=ci.length>0?Math.round(filled/ci.length*100):0;
+      const isDone=!!fd.completedAt;const isP=!isDone&&filled>0;
+      const cls=isDone?'done':isP?'partial':'pending';
+      const dot=isDone?'dot-g':isP?'dot-y':'dot-r';
+      const barCol=isDone?'#00c896':isP?'#ffd700':'#ff4d4d30';
+      h+=`<div class="m-card ${cls}"><div class="m-dot ${dot}"></div><div class="m-card-title">${form.title}</div><div class="m-card-sub">${form.machines}</div>
+        ${fd.technician?`<div class="m-card-tech">👤 ${fd.technician}</div>`:''}
+        ${fd.completedDate?`<div class="m-card-date">📅 ${fd.completedDate}</div>`:''}
+        ${ci.length>0?`<div class="m-bar-track"><div class="m-bar-fill" style="width:${fpct}%;background:${barCol};"></div></div><div style="font-size:9px;color:#4a6a8a;margin-top:3px;">${filled}/${ci.length} · ${fpct}%</div>`:''}</div>`;
+    });
+    h+=`</div></div>`;
+  });
+  h+=`<div class="m-footer"><div class="m-footer-lbl">Generado: ${ds} · FREMEC Mantenimiento</div><div class="m-legend">
+    <div class="m-leg-item"><span class="m-dot dot-g" style="position:static;"></span> OK</div>
+    <div class="m-leg-item"><span class="m-dot dot-y" style="position:static;"></span> Parcial</div>
+    <div class="m-leg-item"><span class="m-dot dot-r" style="position:static;"></span> Pendiente</div>
+  </div></div>`;
+  document.getElementById('monitor-canvas').innerHTML=h;
+}
+
+// ══════════════════════════════════════════
+// IMAGE / SHARE / MAIL
+// ══════════════════════════════════════════
+function showLoad(msg){document.getElementById('loading-msg').textContent=msg||'Procesando...';document.getElementById('mon-loading').style.display='flex';}
+function hideLoad(){document.getElementById('mon-loading').style.display='none';}
+async function captureMonitor(){return await html2canvas(document.getElementById('monitor-canvas'),{backgroundColor:'#060f1a',scale:2.5,useCORS:true,logging:false,allowTaint:true});}
+async function downloadImage(){
+  showLoad('Generando imagen...');
+  try{const c=await captureMonitor();const a=document.createElement('a');a.download=`monitor_mant_${S.viewWeek.replace('-','_')}.png`;a.href=c.toDataURL('image/png');a.click();hideLoad();toast('🖼 Imagen guardada');}
+  catch(e){hideLoad();alert('Error: '+e.message);}
+}
+async function shareImage(){
+  showLoad('Preparando...');
+  try{const c=await captureMonitor();c.toBlob(async blob=>{hideLoad();const file=new File([blob],'monitor_mantenimiento.png',{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:'Monitor Mantenimiento FREMEC',text:wkLabel(S.viewWeek),files:[file]});}catch(e){if(e.name!=='AbortError')fallbackDl(blob);}}else{fallbackDl(blob);}
+  },'image/png');}catch(e){hideLoad();}
+}
+function fallbackDl(blob){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='monitor_mantenimiento.png';a.click();URL.revokeObjectURL(url);toast('📥 Imagen descargada');}
+function sendEmail(){
+  const w=wd();const done=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+  const pct=Math.round(done/FORMS.length*100);const week=wkLabel(S.viewWeek);
+  const sectors={};FORMS.forEach(f=>{if(!sectors[f.sector])sectors[f.sector]=[];sectors[f.sector].push(f);});
+  let body=`INFORME SEMANAL DE MANTENIMIENTO PREVENTIVO\nFREMEC · ${week}\nProgreso: ${done}/${FORMS.length} (${pct}%)\n${'═'.repeat(48)}\n\n`;
+  Object.entries(sectors).forEach(([sec,forms])=>{
+    const sd=forms.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+    body+=`▸ ${sec.toUpperCase()} (${sd}/${forms.length})\n`;
+    forms.forEach(f=>{const fd=w?.forms?.[f.id];const ok=!!fd?.completedAt;body+=`   ${ok?'[✓]':'[✗]'} ${f.title}${fd?.technician?` | ${fd.technician}`:''}${fd?.completedDate?` | ${fd.completedDate}`:''}\n`;});
+    body+='\n';
+  });
+  body+=`${'─'.repeat(48)}\nGenerado desde FREMEC Mantenimiento Preventivo`;
+  window.location.href=`mailto:?subject=${encodeURIComponent(`[FREMEC] Mantenimiento Preventivo · ${week}`)}&body=${encodeURIComponent(body)}`;
+}
+
+// ══════════════════════════════════════════
+// PARTE DIARIO
+// ══════════════════════════════════════════
+function renderDaily(){
+  // set today's date as default
+  const today=new Date().toISOString().split('T')[0];
+  const el=document.getElementById('pd-fecha');
+  if(el&&!el.value)el.value=today;
+  // restore saved contacts for notif page
+  renderDailyList();
+}
+function renderDailyList(){
+  const list=document.getElementById('pd-list');if(!list)return;
+  const query=(document.getElementById('pd-search')?.value||'').toLowerCase().trim();
+  if(!S.daily||S.daily.length===0){
+    list.innerHTML=`<div style="text-align:center;color:var(--text3);margin-top:20px;padding:24px;"><div style="font-size:32px;margin-bottom:8px;">📋</div><div style="font-size:13px;">No hay registros aún.<br>Completá el formulario para agregar uno.</div></div>`;
+    return;
+  }
+  const sorted=[...S.daily].reverse();
+  const filtered=query?sorted.filter(e=>(e.sector||'').toLowerCase().includes(query)||(e.desc||'').toLowerCase().includes(query)):sorted;
+  if(filtered.length===0){
+    list.innerHTML=`<div style="text-align:center;color:var(--text3);margin-top:16px;padding:16px;font-size:13px;">Sin resultados para "${query}"</div>`;
+    return;
+  }
+  list.innerHTML=filtered.map((e)=>{
+    const realIdx=S.daily.indexOf(e);
+    return`<div class="pd-entry">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div class="pd-entry-date">📅 ${e.fecha||'Sin fecha'}</div>
+          <div class="pd-entry-sector">${e.sector||'Sin sector'}</div>
+          <div class="pd-entry-desc">${(e.desc||'').replace(/\n/g,'<br>')}</div>
+        </div>
+        <button class="pd-del-btn" onclick="deleteDailyEntry(${realIdx})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function saveDailyEntry(){
+  const fecha=document.getElementById('pd-fecha').value;
+  const sector=document.getElementById('pd-sector').value.trim();
+  const desc=document.getElementById('pd-desc').value.trim();
+  if(!sector||!desc){toast('⚠ Completá Sector y Descripción');return;}
+  if(!S.daily)S.daily=[];
+  S.daily.push({fecha,sector,desc,createdAt:new Date().toISOString()});
+  save();
+  document.getElementById('pd-sector').value='';
+  document.getElementById('pd-desc').value='';
+  renderDailyList();
+  toast('✓ Registro guardado');
+}
+function deleteDailyEntry(idx){
+  if(!confirm('¿Eliminás este registro?'))return;
+  S.daily.splice(idx,1);save();renderDailyList();toast('🗑 Registro eliminado');
+}
+
+// ══════════════════════════════════════════
+// SEMESTRAL
+// ══════════════════════════════════════════
+function renderSemestral(){
+  const allKeys=SEM_ITEMS.flatMap(s=>s.items.map(i=>i.key));
+  const checked=allKeys.filter(k=>S.semChecks[k]);
+  const pct=allKeys.length>0?Math.round(checked.length/allKeys.length*100):0;
+  document.getElementById('sem-pct-label').textContent=`${pct}%`;
+  document.getElementById('sem-pct-label').style.color=pct===100?'var(--green)':pct>50?'var(--gold)':'var(--text3)';
+  const fill=document.getElementById('sem-progress-fill');
+  fill.style.width=pct+'%';fill.style.background=pct===100?'var(--green)':'#6c3fb5';
+  document.getElementById('sem-count-label').textContent=`${checked.length} de ${allKeys.length} ítems completados`;
+
+  // Actualizar botón Todo OK / Desmarcar todo
+  const semBtn=document.getElementById('sem-todo-ok-btn');
+  if(semBtn){
+    const allChecked=allKeys.every(k=>S.semChecks[k]);
+    semBtn.style.background=allChecked?'linear-gradient(135deg,#1a7fd4,#0d5fa8)':'linear-gradient(135deg,#00c896,#00a87a)';
+    semBtn.innerHTML=`<span style="font-size:18px;">${allChecked?'↩':'✅'}</span> ${allChecked?'Desmarcar todo':'Todo OK'}`;
+  }
+
+  // Fecha y vencimiento
+  const sfEl=document.getElementById('sem-fecha');
+  if(sfEl&&S.semFecha)sfEl.value=S.semFecha;
+  const vencRow=document.getElementById('sem-venc-row');
+  if(S.semFecha&&vencRow){
+    const realizado=new Date(S.semFecha);
+    const proximo=new Date(realizado);proximo.setMonth(proximo.getMonth()+6);
+    const hoy=new Date();const diffDays=Math.round((proximo-hoy)/86400000);
+    let cls='sem-venc-ok',txt='';
+    if(diffDays<0){cls='sem-venc-due';txt=`⚠ Vencido hace ${Math.abs(diffDays)} días`;}
+    else if(diffDays<=30){cls='sem-venc-warn';txt=`⏳ Vence en ${diffDays} días (${proximo.getDate()}/${proximo.getMonth()+1}/${proximo.getFullYear()})`;}
+    else{txt=`✓ Próximo: ${proximo.getDate()}/${proximo.getMonth()+1}/${proximo.getFullYear()} (en ${diffDays} días)`;}
+    vencRow.style.display='block';
+    vencRow.innerHTML=`<span class="sem-venc-badge ${cls}">${txt}</span>`;
+  } else if(vencRow){vencRow.style.display='none';}
+
+  let h='';
+  SEM_ITEMS.forEach(sec=>{
+    const secDone=sec.items.filter(i=>S.semChecks[i.key]).length;
+    h+=`<div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;color:#6c3fb5;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <span>${sec.sec}</span>
+        <span style="font-size:10px;font-weight:400;color:var(--text3);">${secDone}/${sec.items.length}</span>
+      </div>
+      <div class="form-items-card">`;
+    sec.items.forEach(item=>{
+      const ck=!!S.semChecks[item.key];
+      h+=`<div class="sem-check-row ${ck?'ck':''}" id="row-${item.key}">
+        <input type="checkbox" class="sem-cb" id="cb-${item.key}" ${ck?'checked':''} onchange="toggleSemItem('${item.key}',this.checked)"/>
+        <label for="cb-${item.key}" class="sem-check-label">${item.label}</label>
+      </div>`;
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('sem-sections').innerHTML=h;
+}
+
+function saveSemFecha(){
+  S.semFecha=document.getElementById('sem-fecha')?.value||'';
+  save();
+  // Refresh vencimiento badge
+  const vencRow=document.getElementById('sem-venc-row');
+  if(S.semFecha&&vencRow){
+    const realizado=new Date(S.semFecha);
+    const proximo=new Date(realizado);proximo.setMonth(proximo.getMonth()+6);
+    const hoy=new Date();const diffDays=Math.round((proximo-hoy)/86400000);
+    let cls='sem-venc-ok',txt='';
+    if(diffDays<0){cls='sem-venc-due';txt=`⚠ Vencido hace ${Math.abs(diffDays)} días`;}
+    else if(diffDays<=30){cls='sem-venc-warn';txt=`⏳ Vence en ${diffDays} días`;}
+    else{txt=`✓ Próximo: ${proximo.getDate()}/${proximo.getMonth()+1}/${proximo.getFullYear()}`;}
+    vencRow.style.display='block';
+    vencRow.innerHTML=`<span class="sem-venc-badge ${cls}">${txt}</span>`;
+  }
+}
+
+function toggleSemItem(key,checked){
+  S.semChecks[key]=checked;
+  const row=document.getElementById('row-'+key);
+  if(row){if(checked)row.classList.add('ck');else row.classList.remove('ck');}
+  // update progress
+  const allKeys=SEM_ITEMS.flatMap(s=>s.items.map(i=>i.key));
+  const cnt=allKeys.filter(k=>S.semChecks[k]).length;
+  const pct=Math.round(cnt/allKeys.length*100);
+  document.getElementById('sem-pct-label').textContent=`${pct}%`;
+  document.getElementById('sem-pct-label').style.color=pct===100?'var(--green)':pct>50?'var(--gold)':'var(--text3)';
+  document.getElementById('sem-progress-fill').style.width=pct+'%';
+  document.getElementById('sem-progress-fill').style.background=pct===100?'var(--green)':'#6c3fb5';
+  document.getElementById('sem-count-label').textContent=`${cnt} de ${allKeys.length} ítems completados`;
+}
+
+// ✅ MARK ALL AS OK - función principal
+function markAllOK(){
+  const allKeys=SEM_ITEMS.flatMap(s=>s.items.map(i=>i.key));
+  const allChecked=allKeys.every(k=>S.semChecks[k]);
+  if(allChecked){
+    allKeys.forEach(k=>{delete S.semChecks[k];});
+    save();renderSemestral();toast('↩ Ítems desmarcados');
+  } else {
+    allKeys.forEach(k=>{S.semChecks[k]=true;});
+    save();renderSemestral();toast('✅ Todos los ítems marcados como OK');
+  }
+}
+
+function saveSemestral(){
+  S.semChecks._savedAt=new Date().toISOString();
+  save();
+  toast('✓ Estado semestral guardado');
+}
+
+// ══════════════════════════════════════════
+// NOTIFICACIONES
+// ══════════════════════════════════════════
+function renderNotif(){
+  // restore saved values
+  if(S.contacts){
+    const wm=document.getElementById('wa-matias');const wc=document.getElementById('wa-carlos');
+    if(wm&&S.contacts.matias)wm.value=S.contacts.matias;
+    if(wc&&S.contacts.carlos)wc.value=S.contacts.carlos;
+  }
+  if(S.ejsConfig){
+    const es=document.getElementById('ejs-service');const et=document.getElementById('ejs-template');const ek=document.getElementById('ejs-key');
+    if(es&&S.ejsConfig.service)es.value=S.ejsConfig.service;
+    if(et&&S.ejsConfig.template)et.value=S.ejsConfig.template;
+    if(ek&&S.ejsConfig.key)ek.value=S.ejsConfig.key;
+  }
+}
+function saveContacts(){
+  const wm=document.getElementById('wa-matias');const wc=document.getElementById('wa-carlos');
+  S.contacts={matias:wm?wm.value:'',carlos:wc?wc.value:''};save();
+}
+function saveEmailJSConfig(){
+  const es=document.getElementById('ejs-service');const et=document.getElementById('ejs-template');const ek=document.getElementById('ejs-key');
+  S.ejsConfig={service:es?es.value:'',template:et?et.value:'',key:ek?ek.value:''};save();
+}
+
+function buildWAMsg(){
+  const w=wd(S.viewWeek);
+  const done=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+  const pend=FORMS.filter(f=>!w?.forms?.[f.id]?.completedAt);
+  let msg=`🔧 *FREMEC · Mantenimiento Preventivo*\n`;
+  msg+=`📅 ${wkLabel(S.viewWeek)}\n`;
+  msg+=`✅ Completados: ${done}/${FORMS.length}\n`;
+  if(pend.length>0){msg+=`\n⚠ *Pendientes:*\n`;pend.slice(0,5).forEach(f=>{msg+=`  ✗ ${f.title}\n`;});}
+  msg+=`\n_Recordatorio enviado desde la app FREMEC_`;
+  return msg;
+}
+
+function sendWhatsApp(target){
+  let number='';
+  if(target==='matias')number=S.contacts?.matias||'';
+  else if(target==='carlos')number=S.contacts?.carlos||'';
+  else number=document.getElementById('wa-number')?.value||'';
+  number=number.replace(/\D/g,'');
+  if(!number){toast('⚠ Ingresá el número en "Números internos guardados"');return;}
+  const msg=buildWAMsg();
+  window.open(`https://wa.me/${number}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function sendReminderMail(){
+  const dest=document.getElementById('mail-dest')?.value||'';
+  const w=wd(S.viewWeek);
+  const done=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+  const pend=FORMS.filter(f=>!w?.forms?.[f.id]?.completedAt);
+  let body=`Recordatorio de mantenimiento preventivo FREMEC\n${wkLabel(S.viewWeek)}\n\n`;
+  body+=`Progreso: ${done}/${FORMS.length} formularios completados\n\n`;
+  if(pend.length>0){body+=`Formularios pendientes:\n`;pend.forEach(f=>{body+=`  ✗ ${f.title} (${f.sector})\n`;});}
+  body+=`\nRecordá completar los formularios pendientes antes del fin de semana.\n\nSistema FREMEC Mantenimiento Preventivo`;
+  const to=dest?`mailto:${dest}`:'mailto:';
+  window.location.href=`${to}?subject=${encodeURIComponent('[FREMEC] Recordatorio Mantenimiento · '+wkLabel(S.viewWeek))}&body=${encodeURIComponent(body)}`;
+}
+
+async function testEmailJS(){
+  const svc=document.getElementById('ejs-service')?.value;
+  const tpl=document.getElementById('ejs-template')?.value;
+  const key=document.getElementById('ejs-key')?.value;
+  const st=document.getElementById('ejs-status');
+  if(!svc||!tpl||!key){if(st)st.textContent='⚠ Completá los 3 campos antes de probar.';return;}
+  if(st)st.textContent='⏳ Cargando EmailJS...';
+  // Load EmailJS SDK dynamically
+  if(!window.emailjs){
+    const script=document.createElement('script');
+    script.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+    script.onload=async()=>{
+      window.emailjs.init(key);
+      await doSendEmailJS(svc,tpl,st);
+    };
+    script.onerror=()=>{if(st)st.textContent='❌ No se pudo cargar EmailJS. Verificá la conexión.';};
+    document.head.appendChild(script);
+  } else {
+    window.emailjs.init(key);
+    await doSendEmailJS(svc,tpl,st);
+  }
+}
+async function doSendEmailJS(svc,tpl,st){
+  try{
+    const w=wd(S.viewWeek);
+    const done=FORMS.filter(f=>w?.forms?.[f.id]?.completedAt).length;
+    await window.emailjs.send(svc,tpl,{
+      week:wkLabel(S.viewWeek),
+      completed:`${done}/${FORMS.length}`,
+      message:`Informe semanal de mantenimiento FREMEC. ${done}/${FORMS.length} formularios completados.`
+    });
+    if(st)st.textContent='✅ Mail de prueba enviado correctamente.';
+    st.style.color='var(--green)';
+  }catch(e){
+    if(st){st.textContent=`❌ Error: ${e.text||e.message||'Verificá tus credenciales.'}`;st.style.color='var(--red)';}
+  }
+}
+
+// ══════════════════════════════════════════
+// BACKUP - EXPORT / IMPORT
+// ══════════════════════════════════════════
+function exportData(){
+  const data={weeks:S.weeks,daily:S.daily,semChecks:S.semChecks,semFecha:S.semFecha,contacts:S.contacts,ejsConfig:S.ejsConfig,exportedAt:new Date().toISOString(),version:'fremec6'};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date();
+  a.download=`fremec_backup_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.href=url;a.click();URL.revokeObjectURL(url);
+  toast('📥 Backup exportado');
+  const st=document.getElementById('backup-status');
+  if(st)st.textContent=`✓ Backup generado el ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const st=document.getElementById('backup-status');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.weeks&&!data.daily){throw new Error('Archivo inválido');}
+      if(!confirm('¿Importar este backup? Se reemplazarán todos los datos actuales.'))return;
+      if(data.weeks)S.weeks=data.weeks;
+      if(data.daily)S.daily=data.daily;
+      if(data.semChecks)S.semChecks=data.semChecks;
+      if(data.semFecha)S.semFecha=data.semFecha;
+      if(data.contacts)S.contacts=data.contacts;
+      if(data.ejsConfig)S.ejsConfig=data.ejsConfig;
+      save();renderHome();
+      toast('✓ Datos importados correctamente');
+      if(st)st.textContent=`✓ Importado: ${file.name}`;
+      st.style.color='var(--green)';
+    }catch(err){
+      if(st){st.textContent=`❌ Error: ${err.message}`;st.style.color='var(--red)';}
+      toast('⚠ Archivo inválido');
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════
+// PLANO
+// ══════════════════════════════════════════
+const PLANO_SECTORS=[
+  {id:'corte_tubos',  label:'CORTE DE TUBOS',   color:'#1a7fd4', x:10,  y:10,  w:240, h:110,
+   machines:[
+     {n:'Push Pull A5',c:'201-48'},{n:'Push Pull A6',c:'208'},{n:'Push Pull A7',c:'204-48'},
+     {n:'Cortadora 1',c:'107'},{n:'Cortadora 2',c:'108'},{n:'Cortadora 3',c:'98·86'},
+     {n:'Cortadora 4',c:'101'},{n:'Cortadora 5',c:'109'},{n:'Cortadora 6',c:'130'},
+     {n:'Cortadora 7',c:'85'},{n:'Cortadora 8',c:'70'},{n:'Cortadora 9',c:'224'},
+     {n:'Cortadora 10',c:'183'},{n:'Contadoras',c:'238·237·242·129'},
+   ]},
+  {id:'pelado_prensado', label:'PELADO / PRENSADO', color:'#9b59b6', x:260, y:10,  w:200, h:110,
+   machines:[
+     {n:'Peladora 183',c:'Celda A'},{n:'Peladora 182',c:'Celda V'},{n:'Peladora 84',c:'222·dec'},
+     {n:'Peladora 83',c:'265'},{n:'Peladora 74',c:'206'},{n:'Peladora 75',c:'131'},
+     {n:'Prensa',c:'40'},{n:'Prensa',c:'10'},{n:'Calzancín',c:'B8'},
+   ]},
+  {id:'corte_vaina',  label:'CORTE DE VAINA',   color:'#e67e22', x:470, y:10,  w:180, h:110,
+   machines:[
+     {n:'Asmejadora',c:'181'},{n:'Asmejadora',c:'128'},{n:'Corte Vaina',c:'56·3·4'},
+     {n:'ZAMAC',c:'246·248'},{n:'Taladro',c:'239'},{n:'Prensa Hidráulica',c:'158·160·180'},
+     {n:'Clavadora',c:'Celda'},{n:'Prensa FF',c:'266'},
+   ]},
+  {id:'inyectoras',  label:'INYECTORAS',        color:'#27ae60', x:660, y:10,  w:130, h:110,
+   machines:[
+     {n:'Inyectora PL',c:'144'},{n:'Inyectora PL',c:'145'},{n:'Inyectora PL',c:'229'},
+     {n:'Inyectora PL',c:'185'},{n:'Inyectora PL',c:'251'},{n:'Micro Obonic',c:'239'},
+     {n:'Micro',c:'164'},{n:'Micro',c:'142'},
+   ]},
+  {id:'tornos',      label:'TORNOS CNC',        color:'#d35400', x:10,  y:130, w:300, h:130,
+   machines:[
+     {n:'Torno 1',c:'240'},{n:'Torno 2',c:'173'},{n:'Torno 3',c:'204'},
+     {n:'Torno 4',c:'473'},{n:'Torno 5',c:'240'},{n:'Torno 6',c:'254'},
+     {n:'Torno 7',c:'257'},{n:'Torno 8',c:'204'},{n:'Torno 9',c:'169·167'},
+     {n:'Saranda',c:'147'},{n:'Bobinado',c:'99·91-98'},{n:'Tiro',c:'30·43'},
+   ]},
+  {id:'fabricadoras',label:'FABRICADORAS VAINAS',color:'#c0392b', x:320, y:130, w:330, h:130,
+   machines:[
+     {n:'Fab. 1 (9)',c:'40'},{n:'Fab. 2 (8)',c:'81'},{n:'Fab. 3 (7)',c:'11'},
+     {n:'Fab. 4 (6)',c:'11'},{n:'Fab. 5 (5)',c:'155'},{n:'Fab. 6 (4)',c:'143'},
+     {n:'Fab. 7 (3)',c:'143'},{n:'Fab. 8 (2)',c:'144'},{n:'Fab. 9 (1)',c:'54'},
+     {n:'Extrusora Laminadora',c:'259·254'},{n:'Sensit.',c:'93·114'},
+   ]},
+  {id:'ensayos',    label:'ENSAYOS',            color:'#16a085', x:10,  y:270, w:200, h:110,
+   machines:[
+     {n:'Ensayo Oeste',c:'231'},{n:'Ensayo Centro',c:'232'},{n:'Ensayo Este',c:'233'},
+     {n:'Ultrasonido',c:'255'},{n:'Ultrasonido',c:'256'},{n:'Mano Auto',c:'268'},
+     {n:'Mano Manual',c:'269'},{n:'Sensitiva',c:'Piedr.'},{n:'Cortadora',c:'Norte/Sur'},
+   ]},
+  {id:'servicios',  label:'SERVICIOS',          color:'#f39c12', x:220, y:270, w:220, h:110,
+   machines:[
+     {n:'Compresor',c:'187'},{n:'Compresor',c:'261'},{n:'Generador',c:'170'},
+     {n:'Chiller',c:'114'},{n:'Chiller',c:'141'},{n:'Peladora',c:'182'},
+     {n:'Marcadora Láser',c:'241·270'},{n:'Prensa FF',c:'266'},
+   ]},
+  {id:'deposito',   label:'DEPÓSITO / DESPACHO',color:'#7f8c8d', x:450, y:270, w:340, h:110,
+   machines:[
+     {n:'Autoelevador Hangcha',c:'Depósito'},{n:'Apilador 1',c:'152'},{n:'Apilador 2',c:'184'},
+     {n:'Selladora 1',c:'200·201'},{n:'Selladora 2',c:'199·197'},{n:'Zunchadora',c:'253'},
+     {n:'Corte Cable Norte',c:'50·80'},{n:'Corte Cable Sur',c:'44·106'},{n:'Electroeros.',c:'52'},
+   ]},
+  {id:'balancin',   label:'BALANCÍN / MEZCL.',  color:'#2c3e50', x:10,  y:390, w:780, h:80,
+   machines:[
+     {n:'Balancín',c:'B8'},{n:'Calentador Material',c:'473'},{n:'Mezcladora Trituradora',c:'260·166'},
+     {n:'Corte Cable 1-51',c:'Ensayo'},{n:'Corte Cable 2-156',c:'Norte'},{n:'Corte Cable 3-82',c:'Sur'},
+     {n:'Prensa Sub-Conjuntos',c:'36'},{n:'Piedra',c:'39'},{n:'Torno Manual',c:'ZAMAC'},
+   ]},
+];
+
+function renderPlano(){
+  const svg=document.getElementById('plano-svg');
+  let s='';
+  // Borde planta
+  s+=`<rect x="5" y="5" width="790" height="470" rx="8" fill="none" stroke="#1e3a5a" stroke-width="1.5"/>`;
+  // Título planta
+  s+=`<text x="400" y="490" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#4a6a8a" letter-spacing="2">PLANTA FREMEC</text>`;
+
+  PLANO_SECTORS.forEach(sec=>{
+    const col=sec.color;
+    const lum=col+'22';
+    s+=`<g onclick="showPlanoDetail('${sec.id}')" style="cursor:pointer;">
+      <rect x="${sec.x}" y="${sec.y}" width="${sec.w}" height="${sec.h}" rx="6" fill="${lum}" stroke="${col}" stroke-width="1.5" class="plano-sector"/>
+      <text x="${sec.x+sec.w/2}" y="${sec.y+16}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" font-weight="800" fill="${col}" letter-spacing="0.5">${sec.label}</text>`;
+    // Máquinas como puntos
+    const cols=Math.min(4,Math.ceil(Math.sqrt(sec.machines.length)));
+    sec.machines.forEach((m,i)=>{
+      const col2=Math.floor(i/cols),row=i%cols;
+      const mx=sec.x+12+row*(sec.w-24)/Math.max(cols-1,1);
+      const my=sec.y+30+col2*22;
+      if(my<sec.y+sec.h-8){
+        s+=`<circle cx="${mx}" cy="${my}" r="3" fill="${col}" opacity="0.8"/>`;
+        const label=m.n.length>14?m.n.slice(0,13)+'…':m.n;
+        s+=`<text x="${mx+6}" y="${my+4}" font-family="DM Sans,sans-serif" font-size="7.5" fill="#b0c4d8">${label} <tspan fill="${col}" font-weight="700">${m.c}</tspan></text>`;
+      }
+    });
+    s+=`</g>`;
+  });
+  svg.innerHTML=s;
+
+  // Add hover effect via CSS
+  const style=document.createElement('style');
+  style.textContent='.plano-sector{transition:opacity 0.15s;}.plano-sector:hover{opacity:0.7;}';
+  if(!document.getElementById('plano-style')){style.id='plano-style';document.head.appendChild(style);}
+
+  document.getElementById('plano-detail').style.display='none';
+}
+
+function showPlanoDetail(id){
+  const sec=PLANO_SECTORS.find(s=>s.id===id);if(!sec)return;
+  const el=document.getElementById('plano-detail');
+  const grid=sec.machines.map(m=>`
+    <div style="background:${sec.color}15;border:1px solid ${sec.color}40;border-radius:8px;padding:8px 10px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);">${m.n}</div>
+      <div style="font-size:11px;color:${sec.color};font-weight:700;margin-top:2px;">Celda / Nº ${m.c}</div>
+    </div>`).join('');
+  document.getElementById('plano-detail-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <div style="width:14px;height:14px;background:${sec.color};border-radius:3px;flex-shrink:0;"></div>
+      <div style="font-size:15px;font-weight:800;">${sec.label}</div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">${sec.machines.length} máquinas en este sector</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${grid}</div>`;
+  el.style.display='block';
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg||'✓ OK';t.style.display='block';
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.style.display='none';},2800);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+load();
+renderHome();
+// Set today on daily form
+const pdFecha=document.getElementById('pd-fecha');
+if(pdFecha)pdFecha.value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
